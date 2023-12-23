@@ -1,12 +1,10 @@
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Scanner;
 
 class Bank {
     private double balance;
 
-    public Bank(double initialBal) {
-        this.balance = initialBal;
+    public Bank(double initialBalance) {
+        this.balance = initialBalance;
     }
 
     public double getBalance() {
@@ -15,110 +13,93 @@ class Bank {
 
     public void deposit(double amount) {
         balance += amount;
+        System.out.println("Deposit successful. New balance: Rs." + balance);
     }
 
     public boolean withdraw(double amount) {
-        if (amount <= balance) {
-            balance -= amount;
-            return true;
-        } else {
+        if (amount > balance) {
+            System.out.println("Insufficient funds. Withdrawal failed.");
             return false;
+        } else {
+            balance -= amount;
+            System.out.println("Withdrawal successful. New balance: Rs." + balance);
+            return true;
         }
     }
 }
 
-public class AtmInterface extends JFrame {
-    private Bank usersAcc;
+class AtmActivity {
+    private Bank bankAccount;
 
-    private JTextField amountField;
-    private JTextArea result;
-
-    public AtmInterface(Bank account) {
-        this.usersAcc = account;
-
-        setTitle("ATM Machine");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-
-        initializeComponents();
+    public AtmActivity(Bank bankAccount) {
+        this.bankAccount = bankAccount;
     }
 
-    private void initializeComponents() {
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+    public void display() {
+        System.out.println("1. Withdraw");
+        System.out.println("2. Deposit");
+        System.out.println("3. Check Balance");
+        System.out.println("4. Exit");
+    }
 
-        amountField = new JTextField(10);
-        add(new JLabel("Enter Amount:"));
-        add(amountField);
+    public void run() {
+        Scanner scanner = new Scanner(System.in);
+        int choice;
 
-        JButton withdrawButton = new JButton("Withdraw");
-        JButton depositButton = new JButton("Deposit");
-        JButton checkBalanceButton = new JButton("Check Balance");
+        do {
+            display();
+            System.out.print("Enter your choice: ");
+            choice = scanner.nextInt();
 
-        result = new JTextArea(5, 20);
-        result.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(result);
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter withdrawal amount: Rs.");
+                    double withdrawAmount = scanner.nextDouble();
+                    if (withdrawAmount > 0) {
+                        bankAccount.withdraw(withdrawAmount);
+                    } else {
+                        System.out.println("Invalid amount. Please enter a positive value.");
+                    }
+                    break;
 
-        add(withdrawButton);
-        add(depositButton);
-        add(checkBalanceButton);
-        add(scrollPane);
+                case 2:
+                    System.out.print("Enter deposit amount: Rs.");
+                    double depositAmount = scanner.nextDouble();
+                    if (depositAmount > 0) {
+                        bankAccount.deposit(depositAmount);
+                    } else {
+                        System.out.println("Invalid amount. Please enter a positive value.");
+                    }
+                    break;
 
-        withdrawButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleWithdraw();
+                case 3:
+                    System.out.println("Your current balance: Rs." + bankAccount.getBalance());
+                    break;
+
+                case 4:
+                    System.out.println("Exiting ATM. Thank you!");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice. Please enter a number between 1 and 4.");
+                    break;
             }
-        });
 
-        depositButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleDeposit();
-            }
-        });
+        } while (choice != 4);
 
-        checkBalanceButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                displayBalance();
-            }
-        });
+        scanner.close();
     }
+}
 
-    private void handleWithdraw() {
-        try {
-            double amount = Double.parseDouble(amountField.getText());
-            if (usersAcc.withdraw(amount)) {
-                displayMessage("Withdrawal successful. New balance: " + usersAcc.getBalance());
-            } else {
-                displayMessage("Insufficient funds for withdrawal.");
-            }
-        } catch (NumberFormatException ex) {
-            displayMessage("Invalid amount. Please enter a valid number.");
-        }
-    }
-
-    private void handleDeposit() {
-        try {
-            double amount = Double.parseDouble(amountField.getText());
-            usersAcc.deposit(amount);
-            displayMessage("Deposit successful. New balance: " + usersAcc.getBalance());
-        } catch (NumberFormatException ex) {
-            displayMessage("Invalid amount. Please enter a valid number.");
-        }
-    }
-
-    private void displayBalance() {
-        displayMessage("Current Balance: " + usersAcc.getBalance());
-    }
-
-    private void displayMessage(String message) {
-        result.setText(message);
-    }
-
+public class AtmInterface {
     public static void main(String[] args) {
-        Bank usersAcc = new Bank(1000.0); 
-        SwingUtilities.invokeLater(() -> new AtmInterface(usersAcc).setVisible(true));
+        
+        Bank userAccount = new Bank(1000);
+
+        
+        AtmActivity atm = new AtmActivity(userAccount);
+
+      
+        atm.run();
     }
 }
